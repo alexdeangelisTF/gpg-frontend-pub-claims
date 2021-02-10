@@ -4,210 +4,223 @@
 function shortcode_pub_dashboard_function() {
   
   $string = '';
-  
+  global $wpdb;
   $site_url = get_site_url();
-  $url_pub_id = $_GET['pub_id'];
+  $pub_id = $_GET['pub_id'];
   $current_user_id = strval(get_current_user_id());
   
-  $entry_count = 0;
-  global $wpdb;
-  // First check if the logged in user has pubs that have been claimed
-  $entry_id_objects = $wpdb->get_results("SELECT id FROM wp_gf_entry WHERE form_id=6 AND created_by=" . $current_user_id);
+  $dashboard_sections = array(
+    'claim',
+    'features',
+    'food',
+    'drinks',
+    'games',
+    'accommodation',
+    'entertainment',
+    'image_gallery',
+  );
   
-  if ($entry_id_objects) {
+  $string .= '<div class="pub-dashboard">';
+  
+  foreach($dashboard_sections as $dashboard_section) {
+    $empty = false;
+    if ($dashboard_section == 'claim') {
+      $form_id = 6;
+      $form_url = $site_url . '/claim-a-pub/claim-form?pub_id=' . $pub_id;
+      $title = 'Introduction';
+    } elseif ($dashboard_section == 'features') {
+      $form_id = 13;
+      $form_url = $site_url . '/claim-a-pub/claim-general-features?pub_id=' . $pub_id;
+      $title = 'General features';
+    } elseif($dashboard_section == 'food') {
+      $form_id = 17;
+      $form_url = $site_url . '/claim-a-pub/claim-food?pub_id=' . $pub_id;
+      $title = 'Food';
+    } elseif($dashboard_section == 'drinks') {
+      $form_id = 18;
+      $form_url = $site_url . '/claim-a-pub/claim-drinks?pub_id=' . $pub_id;
+      $title = 'Drinks';
+    } elseif($dashboard_section == 'games') {
+      $form_id = 19;
+      $form_url = $site_url . '/claim-a-pub/claim-games?pub_id=' . $pub_id;
+      $title = 'Games';
+    } elseif($dashboard_section == 'accommodation') {
+      $form_id = 20;
+      $form_url = $site_url . '/claim-a-pub/claim-accommodation?pub_id=' . $pub_id;
+      $title = 'Accommodation';
+    } elseif($dashboard_section == 'entertainment') {
+      $form_id = 21;
+      $form_url = $site_url . '/claim-a-pub/claim-entertainment?pub_id=' . $pub_id;
+      $title = 'Entertainment'; 
+    } elseif($dashboard_section == 'image_gallery') {
+      $form_id = 15;
+      $form_url = $site_url . '/claim-a-pub/claim-image-gallery?pub_id=' . $pub_id;
+      $title = 'Image Gallery'; 
+    } else {}
     
-    foreach($entry_id_objects as $entry_id_object) {
-      
-      $entry_id = $entry_id_object->id;
-      $pub_id_objects = $wpdb->get_results("SELECT meta_value FROM wp_gf_entry_meta WHERE meta_key=1 AND entry_id=" . $entry_id);
-      
+    
+    // We need to get the latest entry id for the form from the user, for this pub.
+    // Get all entry ids, which are matched to this pub id
+    $pub_id_objects = $wpdb->get_results("SELECT entry_id FROM wp_gf_entry_meta WHERE meta_key=1 AND meta_value=" . $pub_id . " AND form_id=" . $form_id);
+
+    if ($pub_id_objects) {
+      $entry_id_array = array();
       foreach($pub_id_objects as $pub_id_object) {
-        
-        $pub_id = $pub_id_object->meta_value;
-        if ($pub_id == $url_pub_id) {
-          $entry_count++;
-        } else {}
-        
+        array_push($entry_id_array, $pub_id_object->entry_id);
       }
-      
-    }
-  }
-  
-  if ($entry_count >= 1) {
-    
-    $form_page_array = array(
-      'general_features',
-      'image_gallery',
-      'accommodation',
-      'drinks',
-      'entertainment',
-      'food',
-      'games',
-    );
-    
-    if ($form_page_array) {
-      $string .= '<div class="pub-dashboard">';
-      foreach($form_page_array as $pub_dashboard_section) {
-        
-        if ($pub_dashboard_section == 'general_features') {
-          $title = 'General Features';
-          $claim_form_id = '13';
-          $edit_form_id = '14';
-          $claim_url = $site_url . '/claim-a-pub/claim-general-features?pub_id=' . $url_pub_id;
-          $edit_url = $site_url . '/claim-a-pub/edit-general-features?pub_id=' . $url_pub_id;
-          $coming_soon = false;
-        } elseif ($pub_dashboard_section == 'image_gallery') {
-          $title = 'Image Gallery';
-          $claim_form_id = '15';
-          $edit_form_id = false;
-          $claim_url = $site_url . '/claim-a-pub/claim-image-gallery?pub_id=' . $url_pub_id;
-          $edit_url = $site_url . '/claim-a-pub/edit-image-gallery?pub_id=' . $url_pub_id;
-          $coming_soon = false;
-        } elseif ($pub_dashboard_section == 'accommodation') {
-          $title = 'Accommodation';
-          $claim_form_id = false;
-          $edit_form_id = false;
-          $claim_url = $site_url . '/claim-a-pub/claim-accommodation?pub_id=' . $url_pub_id;
-          $edit_url = $site_url . '/claim-a-pub/edit-accommodation?pub_id=' . $url_pub_id;
-          $coming_soon = true;
-        } elseif ($pub_dashboard_section == 'drinks') {
-          $title = 'Drinks';
-          $claim_form_id = false;
-          $edit_form_id = false;
-          $claim_url = $site_url . '/claim-a-pub/claim-drinks?pub_id=' . $url_pub_id;
-          $edit_url = $site_url . '/claim-a-pub/edit-drinks?pub_id=' . $url_pub_id;
-          $coming_soon = true;
-        } elseif ($pub_dashboard_section == 'entertainment') {
-          $title = 'Entertainment';
-          $claim_form_id = false;
-          $edit_form_id = false;
-          $claim_url = $site_url . '/claim-a-pub/claim-entertainment?pub_id=' . $url_pub_id;
-          $edit_url = $site_url . '/claim-a-pub/edit-entertainment?pub_id=' . $url_pub_id;
-          $coming_soon = true;
-        } elseif ($pub_dashboard_section == 'food') {
-          $title = 'Food';
-          $claim_form_id = false;
-          $edit_form_id = false;
-          $claim_url = $site_url . '/claim-a-pub/claim-food?pub_id=' . $url_pub_id;
-          $edit_url = $site_url . '/claim-a-pub/edit-food?pub_id=' . $url_pub_id;
-          $coming_soon = true;
-        } elseif ($pub_dashboard_section == 'games') {
-          $title = 'Games';
-          $claim_form_id = false;
-          $edit_form_id = false;
-          $claim_url = $site_url . '/claim-a-pub/claim-games?pub_id=' . $url_pub_id;
-          $edit_url = $site_url . '/claim-a-pub/edit-games?pub_id=' . $url_pub_id;
-          $coming_soon = true;
-        } else {
-          $title = false;
-          $claim_form_id = false;
-          $edit_form_id = false;
-          $coming_soon = false;
-        }
-        
-        // If this section is not coming soon, we need to query the database
-        if (!$coming_soon) {
-          $section_claim_count = 0;
-          // Check if this user has got an entry for the form for this section
-          $section_claims = $wpdb->get_results("SELECT id FROM wp_gf_entry WHERE form_id=" . $claim_form_id . " AND created_by=" . $current_user_id);
-          
-          if ($section_claims) {
-            // This means that there are claims on this section form from the current user
-            // We now need to check if any of those claims are for this pub
-            foreach($section_claims as $section_claim) {
-              $section_claim_entry_id = $section_claim->id;
-              $section_claim_pub_ids_objects = $wpdb->get_results("SELECT meta_value FROM wp_gf_entry_meta WHERE meta_key=1 AND entry_id=" . $section_claim_entry_id);
-              
-              if ($section_claim_pub_ids_objects) {
-                
-                foreach($section_claim_pub_ids_objects as $section_claim_pub_ids_object) {
-                  
-                  $section_claim_pub_id = $section_claim_pub_ids_object->meta_value;
-                  if ($section_claim_pub_id == $url_pub_id) {
-                    $section_claim_count++;
-                    $section_claim_id = $section_claim_entry_id;
-                  } else {}
-                  
-                }
-                
-              } else {}
-              
-            }
-            
-          } else {}
-          
-          if ($section_claim_count >= 1) {
-          
-            // This means that this section for this pub has been claimed before
-            // And should therefore reference the Edit forms, pages etc
-            
-            $status = 'edit';
-            
-          } else {
-            
-            // This means that this section for this pub has not been claimed before
-            // And therefore should reference the Claim forms, pages etc
-            
-            $status = 'claim';
-            
+    } else {}
+    if ($entry_id_array) {
+      $user_entry_id_array = array();
+      foreach($entry_id_array as $entry_id) {
+
+        $pub_entry_objects = $wpdb->get_results("SELECT id FROM wp_gf_entry WHERE id=" . $entry_id . " AND form_id=" . $form_id . " AND created_by=" . $current_user_id);
+
+        if ($pub_entry_objects) {
+          foreach($pub_entry_objects as $pub_entry_object) {
+            array_push($user_entry_id_array, $pub_entry_object->id);
           }
-          
-        } else {
-          $status = false;
         }
-        
-        $string .= '<div class="pub-dashboard-panel ' . $pub_dashboard_section . '">';
-        $string .= '<div class="title">';
-        $string .= '<h2>' . $title . '</h2>';
-        if ($status == 'claim') {
-          
-          $string .= '<div class="pub-dashboard-button">';
-          $string .= '<a href="' . $claim_url . '">Claim</a>';
-          $string .= '</div>';
-          
-        } elseif ($status == 'edit') {
-          
-          $string .= '<div class="pub-dashboard-button">';
-          $string .= '<a href="' . $edit_url . '&entry_id=' . $section_claim_id . '">Edit</a>';
-          $string .= '</div>';
-          
-        } else {
-          
-        }
-        if ($coming_soon) {
-          //$string .= do_shortcode['[fl_builder_insert_layout id="121357"]'];
-          $string .= do_shortcode('[fl_builder_insert_layout id=121357]');
-        }
-        $string .= '</div>';
-        $string .= '</div>';
-        
+
       }
-      $string .= '</div">';
-    }
-    ?>
-<style>
-  .pub-dashboard-button a {
-    background-color:#c63c37;
-    color: #ffffff;
-    border:2px solid #c63c37;
-    padding:8px 24px;
-    transition:all 0.5s;
-    border-radius:4px;
-    font-weight:bold;
-    text-transform: uppercase;
-    display:inline-block;
-  }
-  .pub-dashboard-button a:hover {
-    background-color:#ffffff;
-    color: #c63c37;
-  }
-</style>
-<?php
+    } else {}
     
-  } else {
-    // The user does doesn't corespond to the pub id. 
+    // This allows all sections apart from Claim to be shown, even if there is no previous entry for it
+    if ($user_entry_id_array || $dashboard_section != 'claim') {
+      
+      if ($user_entry_id_array) {
+        // Sort the list of entries associated to this user & pub, so that the latest entry is first
+        rsort($user_entry_id_array);
+        // Get the first entry in the array, which should be the latest entry to this form
+        $entry_id = $user_entry_id_array[0];
+        // Get the status of the edit
+        $workflow_status = $wpdb->get_results("SELECT meta_value FROM wp_gf_entry_meta WHERE entry_id=" . $entry_id . " AND form_id=" . $form_id . " AND meta_key='workflow_final_status'");
+        // As entry is is unique, just get the first key in the array & get the meta value
+        $edit_status = $workflow_status[0]->meta_value;
+        if ($edit_status == 'approved') {
+          $status_icon = 'fa-check';
+          $status_colour = 'green';
+        } elseif ($edit_status == 'pending') {
+          $status_icon = 'fa-clock';
+          $status_colour = 'orange';
+        } elseif ($edit_status == 'rejected') {
+          $status_icon = 'fa-times';
+          $status_colour = 'red';
+        } else {
+          $status_icon = 'fa-pen';
+          $status_colour = 'grey';
+        }
+        $form_url = $form_url . '&entry_id=' . $entry_id;
+      } else {
+        $status_icon = 'fa-pen';
+        $status_colour = 'grey';
+      }
+      $string .= '<div class="pub-dashboard-section pub-dashboard-' . $dashboard_section . '">';
+      $string .= '<div class="edit-status ' . $status_colour . '">';
+      $string .= '<div class="icon">';
+      //$string .= '<span class="fa-stack fa-2x">';
+      //$string .= '<i class="fas fa-circle fa-stack-2x"></i>';
+      //$string .= '<i class="fas ' . $status_icon . ' fa-stack-1x fa-inverse"></i>';
+      $string .= '<i class="fas ' . $status_icon . '"></i>';
+      //$string .= '</span>';
+      $string .= '</div>';
+      $string .= '</div>';
+      $string .= '<h4>' . $title . '</h4>';
+      $string .= '<div class="pub-dashboard-button">';
+      $string .= '<a href="' . $form_url . '">Edit</a>';
+      $string .= '</div>';
+      $string .= '</div>';
+    }
+    
   }
   
+  $string .= '</div>';
+  
+  $string .= '<style>
+    .pub-dashboard {
+      display:-webkit-box;
+      display:-ms-flexbox;
+      display:flex;
+      -ms-flex-pack: distribute;
+      justify-content: space-around;
+      -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+    }
+    .pub-dashboard .pub-dashboard-section {
+      text-align:center;
+    }
+    .pub-dashboard-button a {
+      background-color:#c63c37;
+      color: #ffffff;
+      border:2px solid #c63c37;
+      padding:8px 24px;
+      transition:all 0.5s;
+      border-radius:4px;
+      font-weight:bold;
+      text-transform: uppercase;
+      display:inline-block;
+    }
+    .pub-dashboard-button a:hover {
+      background-color:#ffffff;
+      color: #c63c37;
+    }
+    .edit-status {
+      padding-bottom:8px;
+    }
+    .edit-status .icon {
+      width: 60px;
+      height: 60px;
+      border: 2px solid;
+      border-radius: 50%;
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -webkit-box-align: center;
+      -ms-flex-align: center;
+      align-items: center;
+      -webkit-box-pack: center;
+      -ms-flex-pack: center;
+      justify-content: center;
+      margin: auto;
+    }
+    .edit-status .icon {
+      font-size:24px;
+    }
+    .edit-status.green .icon {
+      border-color:#48C637;
+    }
+    .edit-status.green .icon i {
+      color:#48C637;
+    }
+    .edit-status.orange .icon {
+      border-color:#F1D35D;
+    }
+    .edit-status.orange .icon i {
+      color:#F1D35D;
+    }
+    .edit-status.red .icon {
+      border-color:#ED6863;
+    }
+    .edit-status.red .icon i {
+      color:#ED6863;
+    }
+    .edit-status.grey .icon {
+      border-color:#727373;
+    }
+    .edit-status.grey .icon i {
+      color:#727373;
+    }
+    @media (max-width:1299px) {
+      .pub-dashboard .pub-dashboard-section {
+        width:25%;
+        padding-bottom: 25px;
+      }
+    }
+    @media (max-width:991px) {
+      .pub-dashboard .pub-dashboard-section {
+        width:50%;
+      }
+    }
+  </style>';
   
   return $string;
 }
