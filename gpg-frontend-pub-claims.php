@@ -11,11 +11,14 @@
 // Shortcodes for claimed pubs dashboard area
 include( plugin_dir_path( __FILE__ ) . '/shortcodes/dashboard/claimed-pubs.php');
 include( plugin_dir_path( __FILE__ ) . '/shortcodes/dashboard/pub_dashboard.php');
+include( plugin_dir_path( __FILE__ ) . '/shortcodes/dashboard/form-submit-message.php');
+include( plugin_dir_path( __FILE__ ) . '/shortcodes/dashboard/get_url_parameter.php');
 
 // Shortcodes for claimed pubs frontend area
-//include( plugin_dir_path( __FILE__ ) . '/shortcodes/frontend/claim_image_gallery.php');
-include( plugin_dir_path( __FILE__ ) . '/shortcodes/frontend/featured_image.php');
+include( plugin_dir_path( __FILE__ ) . '/shortcodes/frontend/claim_image_gallery.php');
+include( plugin_dir_path( __FILE__ ) . '/shortcodes/frontend/image_field.php');
 include( plugin_dir_path( __FILE__ ) . '/shortcodes/frontend/text_field.php');
+include( plugin_dir_path( __FILE__ ) . '/shortcodes/frontend/checkbox_field.php');
 
 // Shortcodes for claimed pubs admin area
 include( plugin_dir_path( __FILE__ ) . '/shortcodes/admin/cpt_claim.php');
