@@ -69,3 +69,24 @@ function gpg_register_cpt_claim() {
 }
 
 add_action( 'init', 'gpg_register_cpt_claim' );
+
+
+// Add extra column to Claims CPT for postcode
+add_filter('manage_claim_posts_columns', function($columns) {
+	// We remove the date column & then add it back after postcode has been added
+	$taken_out = $columns['date'];
+	unset($columns['date']);
+	$columns = array_merge($columns, ['postcode' => __('Postcode', 'textdomain')]);
+	$columns['date'] = $taken_out;
+	return $columns;
+});
+ 
+add_action('manage_claim_posts_custom_column', function($column_key, $post_id) {
+	if ($column_key == 'postcode') {
+		$pub_id = get_post_meta($post_id, 'claim_pub_id', true);
+		if ($pub_id) {
+			$postcode = get_post_meta($pub_id, 'pub_postcode', true);
+			echo $postcode;
+		}
+	}
+}, 10, 2);
